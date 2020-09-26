@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		035BA140251F1A1C00A8A274 /* NSNotification+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 035BA13F251F1A1C00A8A274 /* NSNotification+Extension.swift */; };
 		03A67B75251A196A00684F1E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A67B74251A196A00684F1E /* AppDelegate.swift */; };
 		03A67B77251A196A00684F1E /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A67B76251A196A00684F1E /* SceneDelegate.swift */; };
 		03A67B79251A196A00684F1E /* ConversationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A67B78251A196A00684F1E /* ConversationViewController.swift */; };
@@ -27,6 +28,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		035BA13F251F1A1C00A8A274 /* NSNotification+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSNotification+Extension.swift"; sourceTree = "<group>"; };
 		03A67B71251A196A00684F1E /* ChatApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChatApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		03A67B74251A196A00684F1E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		03A67B76251A196A00684F1E /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -164,6 +166,7 @@
 			children = (
 				03A67B9D251B127800684F1E /* UIView+Extension.swift */,
 				03A67B9F251B1BC300684F1E /* UIViewController+Extension.swift */,
+				035BA13F251F1A1C00A8A274 /* NSNotification+Extension.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -205,6 +208,7 @@
 				03A67B6E251A196A00684F1E /* Frameworks */,
 				03A67B6F251A196A00684F1E /* Resources */,
 				31ADC38AB315CA9B07004AD3 /* [CP] Embed Pods Frameworks */,
+				8F75F651F2955161EBF30FEC /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -302,6 +306,23 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		8F75F651F2955161EBF30FEC /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-ChatApp/Pods-ChatApp-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-ChatApp/Pods-ChatApp-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ChatApp/Pods-ChatApp-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -321,6 +342,7 @@
 				03A67B77251A196A00684F1E /* SceneDelegate.swift in Sources */,
 				03A67B9E251B127800684F1E /* UIView+Extension.swift in Sources */,
 				03A67B94251A1EB300684F1E /* PhotoViewerViewController.swift in Sources */,
+				035BA140251F1A1C00A8A274 /* NSNotification+Extension.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
