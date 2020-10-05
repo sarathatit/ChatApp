@@ -11,11 +11,17 @@ target 'ChatApp' do
 pod 'Firebase/Core'
 pod 'Firebase/Auth'
 pod 'Firebase/Database'
+pod 'Firebase/Storage'
 
 #Facebook
 pod 'FBSDKLoginKit'
 #Google
 pod 'GoogleSignIn'
 
+#Custom
+pod 'JGProgressHUD'
+pod 'MessageKit'
+pod 'RealmSwift'
+pod 'SDWebImage'
 
 end

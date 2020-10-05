@@ -29,6 +29,7 @@ class ProfileViewController: UIViewController {
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
+        tableView.tableHeaderView = createTableViewHeader()
     }
     
     override func viewDidLayoutSubviews() {
@@ -36,8 +37,56 @@ class ProfileViewController: UIViewController {
         
         tableView.frame = CGRect(x: 0, y: 0, width: view.width, height: view.height)
     }
+    
+    // MARK:- Custom Methods
+    
+    func createTableViewHeader() -> UIView? {
+        guard let email = UserDefaults.standard.value(forKey: "email") as? String else {
+            return nil
+        }
+        
+        let safeEmail = DatabaseManager.safeEmail(with: email)
+        let fileName = safeEmail + "_profile_picture.png"
+        let path = "images/"+fileName
+        
+        let headerView = UIView(frame: CGRect(x: 0, y: 0, width: self.view.width, height: 300))
+        headerView.backgroundColor = .link
+        
+        let imageView = UIImageView(frame: CGRect(x: (headerView.width - 150)/2, y: (headerView.height - 150)/2, width: 150, height: 150))
+        imageView.contentMode = .scaleAspectFill
+        imageView.layer.borderColor = UIColor.white.cgColor
+        imageView.backgroundColor = .white
+        imageView.layer.borderWidth = 3
+        imageView.layer.masksToBounds = true
+        imageView.layer.cornerRadius = imageView.width / 2
+        headerView.addSubview(imageView)
+        
+        StorageManager.shared.downloadUrl(from: path) { [weak self] (result) in
+            switch result {
+            case .success(let url):
+                self?.downloadImage(imageView: imageView, url: url)
+            case .failure(let error):
+                print("failed to get download url: \(error)")
+            }
+        }
+        
+        return headerView
+    }
+    
+    func downloadImage(imageView: UIImageView, url: URL) {
+        URLSession.shared.dataTask(with: url) { (data, _, error) in
+            guard let data = data, error == nil else {
+                return
+            }
+            
+            DispatchQueue.main.async {
+                imageView.image = UIImage(data: data)
+            }
+        }.resume()
+    }
 
 }
+
 
 extension ProfileViewController: UITableViewDelegate,UITableViewDataSource {
     

@@ -10,6 +10,7 @@ import UIKit
 import Firebase
 import FBSDKLoginKit
 import GoogleSignIn
+import JGProgressHUD
 
 class LoginViewController: UIViewController {
     
@@ -77,6 +78,8 @@ class LoginViewController: UIViewController {
     private let googleLoginButton = GIDSignInButton()
     
     private var loginObserver: NSObjectProtocol?
+    
+    private let spinner = JGProgressHUD(style: .dark)
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -163,15 +166,38 @@ class LoginViewController: UIViewController {
             return
         }
         
+        self.spinner.show(in: view, animated: true)
+        
         // Firebase Login
         Auth.auth().signIn(withEmail: email, password: password) { [weak self] (authResult, error) in
             guard let strongSelf = self else {
                 return
             }
+            DispatchQueue.main.async {
+                strongSelf.spinner.dismiss()
+            }
             guard let result = authResult, error == nil else {
                 print("Unable to login")
                 return
             }
+            
+            let safeEmail = DatabaseManager.safeEmail(with: email)
+            DatabaseManager.shared.getDataFor(path: safeEmail) { (result) in
+                switch result {
+                case .success(let data):
+                    guard let userData = data as? [String: Any],
+                        let firstName = userData["first_name"] as? String,
+                        let lastName = userData["last_name"] as? String else {
+                        return
+                    }
+                    UserDefaults.standard.set("\(firstName) \(lastName)", forKey: "name")
+                case .failure(let error):
+                    print("failed to get the user data: \(error)")
+                }
+            }
+            
+            UserDefaults.standard.set(email, forKey: "email")
+            
             let user = result.user
             print("Logged in \(user)")
             strongSelf.navigationController?.dismiss(animated: true, completion: nil)
@@ -193,6 +219,7 @@ extension LoginViewController: UITextFieldDelegate {
     }
 }
 
+// MARK:- FaceBook Login
 extension LoginViewController: LoginButtonDelegate {
     func loginButtonDidLogOut(_ loginButton: FBLoginButton) {
         //
@@ -228,16 +255,34 @@ extension LoginViewController: LoginButtonDelegate {
                                return
                        }
             
-//            let nameComponents = userName.components(separatedBy: " ")
-//            guard nameComponents.count == 2 else {
-//                return
-//            }
-//            let firstName = nameComponents[0]
-//            let lastName = nameComponents[1]
-            
             DatabaseManager.shared.userExists(with: email) { (exists) in
                 if !exists {
-                    DatabaseManager.shared.insertUser(with: ChatAppUser(firstName: firstName, lastName: lastName, emailAddress: email))
+                    let chatUser = ChatAppUser(firstName: firstName, lastName: lastName, emailAddress: email)
+                    DatabaseManager.shared.insertUser(with: chatUser, completion: { success in
+                        if success {
+                            guard  let url = URL(string: pictureUrl) else {
+                                return
+                            }
+                            
+                            URLSession.shared.dataTask(with: url, completionHandler: { data,_,_ in
+                                guard let data = data else {
+                                    print("failed to get the data from facebook")
+                                    return
+                                }
+                                // upload the image
+                                let fileName = chatUser.profilePictureFileName
+                                StorageManager.shared.uploadProfilePicture(with: data, fileName: fileName) { (result) in
+                                    switch result {
+                                    case .success(let downloadUrl):
+                                        UserDefaults.standard.set(downloadUrl, forKey: "profile_picture_url")
+                                        print(downloadUrl)
+                                    case .failure(let error):
+                                        print("Storage manager error: \(error)")
+                                    }
+                                }
+                                }).resume()
+                        }
+                    })
                 }
             }
             
@@ -254,6 +299,8 @@ extension LoginViewController: LoginButtonDelegate {
                     }
                     return
                 }
+                UserDefaults.standard.set("\(firstName) \(lastName)", forKey: "name")
+                UserDefaults.standard.set(email, forKey: "email")
                 print("Login success from the facebook")
                 strongSelf.navigationController?.dismiss(animated: true, completion: nil)
             }

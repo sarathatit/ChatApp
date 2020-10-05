@@ -54,7 +54,31 @@ class AppDelegate: UIResponder, UIApplicationDelegate,GIDSignInDelegate {
         
         DatabaseManager.shared.userExists(with: email) { (exists) in
             if !exists {
-                DatabaseManager.shared.insertUser(with: ChatAppUser(firstName: firstName, lastName: lastName, emailAddress: email))
+                let chatUser = ChatAppUser(firstName: firstName, lastName: lastName, emailAddress: email)
+                DatabaseManager.shared.insertUser(with: chatUser, completion: { success in
+                    if success {
+                        guard let url = user.profile.imageURL(withDimension: 200) else {
+                            return
+                        }
+                        URLSession.shared.dataTask(with: url, completionHandler: { data,_,_ in
+                            guard let data = data else {
+                                print("failed to get the data from the google profile")
+                                return
+                            }
+                            // upload the image
+                            let fileName = chatUser.profilePictureFileName
+                            StorageManager.shared.uploadProfilePicture(with: data, fileName: fileName) { (result) in
+                                switch result {
+                                case .success(let downloadUrl):
+                                    UserDefaults.standard.set(downloadUrl, forKey: "profile_picture_url")
+                                    print(downloadUrl)
+                                case .failure(let error):
+                                    print("Storage manager error: \(error)")
+                                }
+                            }
+                            }).resume()
+                    }
+                })
             }
         }
 
@@ -71,6 +95,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate,GIDSignInDelegate {
                 print("Failed to login with google credential!")
                 return
             }
+            UserDefaults.standard.set(email, forKey: "email")
+            UserDefaults.standard.set("\(firstName) \(lastName)", forKey: "name")
             print("SuccessFully signedIn with google")
             NotificationCenter.default.post(name: .didLoginNotification, object: nil)
         }

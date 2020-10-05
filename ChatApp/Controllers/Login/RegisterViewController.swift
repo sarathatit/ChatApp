@@ -8,6 +8,7 @@
 
 import UIKit
 import Firebase
+import JGProgressHUD
 
 class RegisterViewController: UIViewController {
     
@@ -100,6 +101,8 @@ class RegisterViewController: UIViewController {
         return button
     }()
     
+    private let spinner = JGProgressHUD(style: .dark)
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -178,10 +181,16 @@ class RegisterViewController: UIViewController {
             return
         }
         
+        self.spinner.show(in: view, animated: true)
+        
         // Firebase Resiteration
         DatabaseManager.shared.userExists(with: email) { [weak self] (exists) in
             guard let strongSelf = self else  {
                 return 
+            }
+            
+            DispatchQueue.main.async {
+                strongSelf.spinner.dismiss()
             }
             
             guard !exists else {
@@ -195,7 +204,25 @@ class RegisterViewController: UIViewController {
                     return
                 }
                 
-                DatabaseManager.shared.insertUser(with: ChatAppUser(firstName: firstName, lastName: lastname, emailAddress: email))
+                let chatUser = ChatAppUser(firstName: firstName, lastName: lastname, emailAddress: email)
+                DatabaseManager.shared.insertUser(with: chatUser, completion: { success in
+                    if success {
+                        // upload the image
+                        guard let image = strongSelf.logoImageView.image, let data = image.pngData() else {
+                            return
+                        }
+                        let fileName = chatUser.profilePictureFileName
+                        StorageManager.shared.uploadProfilePicture(with: data, fileName: fileName) { (result) in
+                            switch result {
+                            case .success(let downloadUrl):
+                                UserDefaults.standard.set(downloadUrl, forKey: "profile_picture_url")
+                                print(downloadUrl)
+                            case .failure(let error):
+                                print("Storage manager error: \(error)")
+                            }
+                        }
+                    }
+                })
                 strongSelf.navigationController?.dismiss(animated: true, completion: nil)
             }
         }
